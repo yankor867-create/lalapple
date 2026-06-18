@@ -4,10 +4,294 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>লাল আপেল 🍎</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js">
+    </script>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
+    <style>
+        /* ---- Payment & Bot Section ---- */
+        .payment-bot-section {
+            margin: 20px 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .payment-card,
+        .bot-card {
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .payment-card {
+            background: linear-gradient(135deg, rgba(255, 23, 68, 0.25), rgba(255, 215, 0, 0.08));
+            border-color: rgba(255, 23, 68, 0.3);
+            box-shadow: 0 0 30px rgba(255, 23, 68, 0.08), inset 0 0 60px rgba(255, 23, 68, 0.03);
+            animation: glow-pulse 2.5s ease-in-out infinite;
+        }
+
+        .payment-card::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: var(--radius);
+            padding: 2px;
+            background: conic-gradient(from 0deg, var(--red), var(--gold), var(--red), var(--gold), var(--red));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.6;
+            animation: spin-border 4s linear infinite;
+        }
+
+        @keyframes spin-border {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes glow-pulse {
+            0%,
+            100% {
+                box-shadow: 0 0 30px rgba(255, 23, 68, 0.08), inset 0 0 60px rgba(255, 23, 68, 0.03);
+            }
+            50% {
+                box-shadow: 0 0 50px rgba(255, 23, 68, 0.18), inset 0 0 80px rgba(255, 215, 0, 0.05);
+            }
+        }
+
+        .payment-card:hover {
+            transform: translateY(-3px) scale(1.01);
+            border-color: var(--gold);
+            box-shadow: 0 0 60px rgba(255, 23, 68, 0.2);
+        }
+
+        .payment-card .icon-wrap {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--red), #b71c1c);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: #fff;
+            flex-shrink: 0;
+            box-shadow: 0 0 30px rgba(255, 23, 68, 0.3);
+            animation: icon-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes icon-pulse {
+            0%,
+            100% {
+                box-shadow: 0 0 30px rgba(255, 23, 68, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 50px rgba(255, 23, 68, 0.6), 0 0 80px rgba(255, 215, 0, 0.15);
+            }
+        }
+
+        .payment-card .content {
+            flex: 1;
+        }
+        .payment-card .content h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .payment-card .content h3 .badge {
+            font-size: 10px;
+            background: var(--gold);
+            color: #000;
+            padding: 1px 10px;
+            border-radius: 40px;
+            font-weight: 800;
+        }
+        .payment-card .content p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 2px;
+        }
+        .payment-card .btn-join {
+            background: linear-gradient(135deg, var(--red), #b71c1c);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 20px rgba(255, 23, 68, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .payment-card .btn-join:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 30px rgba(255, 23, 68, 0.5);
+        }
+        .payment-card .btn-join i {
+            font-size: 14px;
+        }
+
+        /* ---- Bot Card ---- */
+        .bot-card {
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.15), rgba(0, 188, 212, 0.06));
+            border-color: rgba(33, 150, 243, 0.2);
+        }
+        .bot-card .icon-wrap {
+            background: linear-gradient(135deg, #2196F3, #0b7dda);
+            box-shadow: 0 0 30px rgba(33, 150, 243, 0.2);
+        }
+        .bot-card .content h3 {
+            color: #fff;
+            font-size: 17px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .bot-card .content h3 .badge {
+            font-size: 10px;
+            background: #FF6F00;
+            color: #fff;
+            padding: 1px 10px;
+            border-radius: 40px;
+            font-weight: 800;
+            animation: blink-badge 1.2s step-end infinite;
+        }
+        @keyframes blink-badge {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+        .bot-card .content p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 2px;
+        }
+        .bot-card .content p .warning {
+            color: #FFD740;
+            font-weight: 600;
+        }
+        .bot-card .btn-start {
+            background: linear-gradient(135deg, #2196F3, #0b7dda);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 20px rgba(33, 150, 243, 0.25);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .bot-card .btn-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 30px rgba(33, 150, 243, 0.4);
+        }
+        .bot-card .btn-start i {
+            font-size: 14px;
+        }
+        .bot-card:hover {
+            transform: translateY(-3px);
+            border-color: #2196F3;
+            box-shadow: 0 0 40px rgba(33, 150, 243, 0.12);
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 480px) {
+            .payment-card,
+            .bot-card {
+                flex-wrap: wrap;
+                padding: 16px;
+            }
+            .payment-card .btn-join,
+            .bot-card .btn-start {
+                width: 100%;
+                justify-content: center;
+                padding: 12px;
+            }
+            .payment-card .icon-wrap,
+            .bot-card .icon-wrap {
+                width: 44px;
+                height: 44px;
+                font-size: 20px;
+            }
+            .payment-card .content h3,
+            .bot-card .content h3 {
+                font-size: 15px;
+            }
+        }
+
+        /* small extra glow for channel text */
+        .payment-card .content h3 i {
+            color: var(--gold);
+            margin-right: 4px;
+        }
+
+        /* remove old channel banner */
+        .channel-banner {
+            display: none !important;
+        }
+
+        /* back-link style */
+        .back-link {
+            display: block;
+            text-align: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s;
+            margin-top: 4px;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+
+        /* extra notice under bot card */
+        .payment-note {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 4px 16px 0;
+            line-height: 1.5;
+        }
+        .payment-note strong {
+            color: var(--gold);
+        }
+    </style>
 </head>
 <body>
     <!-- Loading -->
@@ -84,18 +368,42 @@
                 <button class="btn-secondary" onclick="copyReferralLink()">📋 কপি</button>
             </div>
 
-            <!-- Payment Channel -->
-            <a href="https://t.me/lalappleofficial" target="_blank" class="channel-banner">
-                <i class="fab fa-telegram"></i> 📢 পেমেন্ট প্রুফ চ্যানেল
-            </a>
+            <!-- ===== NEW: Payment & Bot Section (replaces old channel banner) ===== -->
+            <div class="payment-bot-section">
+
+                <!-- Payment Proof Channel — HIGHLIGHTED -->
+                <a href="https://t.me/lalappleofficial" target="_blank" class="payment-card">
+                    <div class="icon-wrap"><i class="fab fa-telegram-plane"></i></div>
+                    <div class="content">
+                        <h3><i class="fas fa-bolt"></i> পেমেন্ট প্রুফ চ্যানেল <span class="badge">📢 লাইভ</span></h3>
+                        <p>সকল পেমেন্টের প্রুফ ও আপডেট দেখুন</p>
+                    </div>
+                    <span class="btn-join"><i class="fas fa-arrow-right"></i> জয়েন করুন</span>
+                </a>
+
+                <!-- Bot Start — required for payment -->
+                <a href="https://t.me/lalapplebot" target="_blank" class="bot-card">
+                    <div class="icon-wrap"><i class="fas fa-robot"></i></div>
+                    <div class="content">
+                        <h3>🤖 বট স্টার্ট করুন <span class="badge">⚠️ আবশ্যক</span></h3>
+                        <p><span class="warning">পেমেন্ট পেতে অবশ্যই বটটি স্টার্ট করুন</span> — নতুবা পেমেন্ট গ্রহণ করা যাবে না</p>
+                    </div>
+                    <span class="btn-start"><i class="fas fa-play"></i> স্টার্ট করুন</span>
+                </a>
+
+                <div class="payment-note">
+                    <i class="fas fa-info-circle" style="color:var(--gold);"></i>
+                    <strong>শর্ত:</strong> উত্তোলনের আগে <strong>@lalapplebot</strong> স্টার্ট করা আবশ্যক। অন্যথায় পেমেন্ট বাতিল হবে।
+                </div>
+            </div>
+
+            <!-- back link (optional) -->
+            <a href="profile.html" class="back-link">👤 প্রোফাইল দেখুন →</a>
+
         </div>
 
-        <!-- Floating Video Button -->
-        <!-- <a href="watch-video.html" class="float-video">
-            <i class="fab fa-youtube"></i>
-            <div><span>ভিডিও</span><strong>১০০ টাকা</strong></div>
-            <span class="badge">নতুন</span>
-        </a> -->
+        <!-- Floating Video Button (commented) -->
+        <!-- <a href="watch-video.html" class="float-video"> ... </a> -->
 
         <!-- Bottom Navigation -->
         <nav class="bottom-nav">
@@ -106,10 +414,14 @@
         </nav>
     </div>
 
-    <script src="config.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-client.js"></script>
-    <script src="app.js"></script>
+    <script src="config.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+    <script src="supabase-client.js">
+    </script>
+    <script src="app.js">
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const tg = window.Telegram?.WebApp;
@@ -128,10 +440,12 @@
             const count = getHourlyAdsCount();
             document.getElementById('todayAds').textContent = `${count}/10`;
         }
+
         function openRulesModal() {
             document.getElementById('rulesModal').style.display = 'flex';
             localStorage.setItem('rules_seen', 'true');
         }
+
         function closeRulesModal() {
             document.getElementById('rulesModal').style.display = 'none';
         }
