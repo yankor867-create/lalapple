@@ -1,12 +1,14 @@
-// app.js – core logic (same as before)
+// app.js – core logic (fixed updateUI)
 let currentUser = null;
 
 function getTelegramUserId() {
     const tg = window.Telegram?.WebApp;
     if (tg?.initDataUnsafe?.user?.id) return tg.initDataUnsafe.user.id.toString();
     let id = localStorage.getItem('temp_user_id');
-    if (!id) { id = 'web_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-        localStorage.setItem('temp_user_id', id); }
+    if (!id) {
+        id = 'web_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+        localStorage.setItem('temp_user_id', id);
+    }
     return id;
 }
 
@@ -62,7 +64,10 @@ async function processReferral(userId, userName, userFirstName) {
         localStorage.setItem(`ref_${userId}`, 'processed');
         setTimeout(() => alert('🎉 রেফারেল সফল! আপনি ৫০ টাকা বোনাস পেয়েছেন!'), 1000);
         return true;
-    } catch (e) { console.error(e); return false; }
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
 }
 
 async function loadUser() {
@@ -106,19 +111,31 @@ async function loadUser() {
 function updateUI() {
     if (!currentUser) return;
     const b = currentUser.balance || 0;
-    document.getElementById('mainBalance').textContent = b.toFixed(2);
-    document.getElementById('userName').textContent = currentUser.first_name || 'ইউজার';
-    document.getElementById('totalReferrals').textContent = currentUser.total_referrals || 0;
-    document.getElementById('totalAds').textContent = currentUser.total_ads || 0;
-    document.getElementById('totalIncome').textContent = (currentUser.total_income || 0).toFixed(2) + ' টাকা';
-    const link =
-        `https://t.me/${window.CONFIG.BOT_USERNAME || 'mishti_kumra_bot'}?startapp=ref${currentUser.id}`;
-    const el = document.getElementById('referralLink');
-    if (el) el.textContent = link;
+
+    const mainBalance = document.getElementById('mainBalance');
+    if (mainBalance) mainBalance.textContent = b.toFixed(2);
+
+    const userName = document.getElementById('userName');
+    if (userName) userName.textContent = currentUser.first_name || 'ইউজার';
+
+    const totalReferrals = document.getElementById('totalReferrals');
+    if (totalReferrals) totalReferrals.textContent = currentUser.total_referrals || 0;
+
+    const totalAds = document.getElementById('totalAds');
+    if (totalAds) totalAds.textContent = currentUser.total_ads || 0;
+
+    const totalIncome = document.getElementById('totalIncome');
+    if (totalIncome) totalIncome.textContent = (currentUser.total_income || 0).toFixed(2) + ' টাকা';
+
+    const link = `https://t.me/${window.CONFIG.BOT_USERNAME || 'mishti_kumra_bot'}?startapp=ref${currentUser.id}`;
+    const referralLink = document.getElementById('referralLink');
+    if (referralLink) referralLink.textContent = link;
+
     const loading = document.getElementById('loadingOverlay');
     if (loading) loading.style.display = 'none';
-    const content = document.getElementById('appContent');
-    if (content) content.style.display = 'block';
+
+    const appContent = document.getElementById('appContent');
+    if (appContent) appContent.style.display = 'block';
 }
 
 function getHourlyAdsCount() {
@@ -245,8 +262,7 @@ async function requestWithdraw(amount, account, method) {
 
 async function copyReferralLink() {
     if (!currentUser) return;
-    const link =
-        `https://t.me/${window.CONFIG.BOT_USERNAME || 'mishti_kumra_bot'}?startapp=ref${currentUser.id}`;
+    const link = `https://t.me/${window.CONFIG.BOT_USERNAME || 'mishti_kumra_bot'}?startapp=ref${currentUser.id}`;
     try {
         await navigator.clipboard.writeText(link);
         alert('✅ রেফারেল লিঙ্ক কপি হয়েছে!\n\n' + link);
