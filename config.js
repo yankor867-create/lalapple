@@ -13,7 +13,7 @@ window.CONFIG = {
         'https://crn77.com/4/10095617',
         'https://omg10.com/4/9475514'
     ],
-    VIDEO_LINKS: ['https://youtu.be/KV4VIo89WSE?si=kvoXQ8vV4YwR8kwj'],
+    VIDEO_LINKS: ['https://youtu.be/YuXwPKja2Fc?si=tFBNJWwclSg77-jC'],
     DAILY_VIDEO_LIMIT: 2,
     VIDEO_REWARD: 100,
     VIDEO_WATCH_SECONDS: 480,
