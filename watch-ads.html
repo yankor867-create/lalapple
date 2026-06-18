@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>এড দেখুন - লাল আপেল</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .back-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            color: var(--text-muted);
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            backdrop-filter: blur(8px);
+        }
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--red);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        .back-btn i { margin-right: 10px; }
+        .popup-warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin: 10px 0;
+            color: var(--gold);
+            font-size: 14px;
+            display: none;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="countdownOverlay" class="countdown-overlay">
+        <div class="ring"><div class="ring-glow"></div><div class="number" id="countdownNumber">15</div></div>
+        <div class="title">এড দেখুন</div>
+        <div class="sub">১৫ সেকেন্ড অপেক্ষা করুন</div>
+    </div>
+    <div id="toast" class="toast"></div>
+
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="text-2xl font-bold">📺 এড দেখুন</h1>
+            <p class="text-white/70">৩০ টাকা/এড | ঘন্টায় ১০টি</p>
+        </header>
+
+        <div id="popupWarning" class="popup-warning">
+            <i class="fas fa-exclamation-triangle"></i> 
+            পপআপ ব্লকার বন্ধ করুন! এড খোলার জন্য ব্রাউজারের পপআপ ব্লকার অফ করুন।
+        </div>
+
+        <div class="glass card" style="text-align:center; margin:16px 0;">
+            <div class="text-5xl font-bold" style="color:var(--red);"><span id="adsCounter">0</span><span>/10</span></div>
+            <div class="progress-track"><div class="fill" id="progressFill" style="width:0%"></div></div>
+            <p style="color:var(--text-muted);">দেখেছেন: <span id="remainingAds">10</span> টি</p>
+            <p style="color:var(--gold); font-weight:700; margin:6px 0;">প্রতি এডে ৩০ টাকা</p>
+            <p style="font-size:12px; color:var(--red);" id="resetTimer">পরবর্তী রিসেট: --</p>
+            <button onclick="watchAd()" id="watchBtn" class="btn-primary" style="margin-top:12px;">🎬 এড দেখুন</button>
+        </div>
+
+        <!-- Big Back Button -->
+        <a href="tasks.html" class="back-btn">
+            <i class="fas fa-arrow-left"></i> টাস্ক পেজে ফিরুন
+        </a>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="index.html"><i class="fas fa-home"></i><span>হোম</span></a>
+        <a href="tasks.html" class="active"><i class="fas fa-tasks"></i><span>টাস্ক</span></a>
+        <a href="withdraw.html"><i class="fas fa-wallet"></i><span>উইথড্র</span></a>
+        <a href="profile.html"><i class="fas fa-user"></i><span>প্রোফাইল</span></a>
+    </nav>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="app.js"></script>
+    <script>
+        let countdownInterval, adOpened = false;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadUser();
+            updateUI();
+            setInterval(updateUI, 60000);
+        });
+
+        function checkHourlyReset() {
+            const hour = new Date().getHours();
+            const last = localStorage.getItem('last_ad_reset_hour');
+            if (last !== null && parseInt(last) !== hour) {
+                localStorage.setItem('hourly_ads_watched', '0');
+                localStorage.setItem('last_ad_reset_hour', hour.toString());
+                return true;
+            }
+            if (last === null) {
+                localStorage.setItem('last_ad_reset_hour', hour.toString());
+                localStorage.setItem('hourly_ads_watched', '0');
+            }
+            return false;
+        }
+
+        function getHourlyAdsCount() {
+            checkHourlyReset();
+            return parseInt(localStorage.getItem('hourly_ads_watched') || '0');
+        }
+
+        function incrementHourlyAdsCount() {
+            const c = getHourlyAdsCount() + 1;
+            localStorage.setItem('hourly_ads_watched', c.toString());
+            return c;
+        }
+
+        function getTimeUntilNextHour() {
+            const now = new Date();
+            const next = new Date(now);
+            next.setHours(now.getHours() + 1, 0, 0, 0);
+            const diff = Math.floor((next - now) / 60000);
+            return diff >= 60 ? `${Math.floor(diff/60)}ঘ ${diff%60}মি` : `${diff} মিনিট`;
+        }
+
+        function updateUI() {
+            const count = getHourlyAdsCount();
+            document.getElementById('adsCounter').textContent = count;
+            document.getElementById('remainingAds').textContent = 10 - count;
+            document.getElementById('progressFill').style.width = `${(count / 10) * 100}%`;
+            document.getElementById('resetTimer').textContent = `পরবর্তী রিসেট: ${getTimeUntilNextHour()}`;
+            const btn = document.getElementById('watchBtn');
+            if (count >= 10) {
+                btn.disabled = true;
+                btn.innerHTML = '❌ লিমিট শেষ';
+                btn.style.opacity = '0.5';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '🎬 এড দেখুন';
+                btn.style.opacity = '1';
+            }
+        }
+
+        async function watchAd() {
+            // Ensure user is loaded
+            let user = await getCurrentUser();
+            if (!user) {
+                await loadUser();
+                user = await getCurrentUser();
+                if (!user) {
+                    alert('ডেটা লোড হয়নি! পেজ রিফ্রেশ করুন।');
+                    return;
+                }
+            }
+
+            const count = getHourlyAdsCount();
+            if (count >= 10) {
+                alert(`❌ লিমিট শেষ! ${getTimeUntilNextHour()} পর চেষ্টা করুন।`);
+                return;
+            }
+            if (adOpened) {
+                alert('এড ইতিমধ্যে খোলা আছে!');
+                return;
+            }
+
+            const btn = document.getElementById('watchBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            const links = window.CONFIG.AD_LINKS;
+            if (!links || links.length === 0) {
+                alert('❌ কোন এড লিংক নেই!');
+                btn.disabled = false;
+                btn.innerHTML = '🎬 এড দেখুন';
+                return;
+            }
+
+            const link = links[Math.floor(Math.random() * links.length)];
+            console.log('Opening ad:', link);
+
+            // Open in new tab
+            const win = window.open(link, '_blank');
+            adOpened = true;
+
+            // If popup blocked, win is null
+            if (win === null) {
+                document.getElementById('popupWarning').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('popupWarning').style.display = 'none';
+                }, 5000);
+                alert('⚠️ পপআপ ব্লকার বন্ধ করুন!');
+                btn.disabled = false;
+                btn.innerHTML = '🎬 এড দেখুন';
+                adOpened = false;
+                return;
+            }
+
+            // Hide warning if it was shown
+            document.getElementById('popupWarning').style.display = 'none';
+
+            // Start countdown
+            const overlay = document.getElementById('countdownOverlay');
+            overlay.style.display = 'flex';
+            let sec = 15;
+            document.getElementById('countdownNumber').textContent = sec;
+
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                sec--;
+                document.getElementById('countdownNumber').textContent = sec;
+                if (sec <= 0) {
+                    clearInterval(countdownInterval);
+                    finishAd();
+                }
+            }, 1000);
+        }
+
+        async function finishAd() {
+            document.getElementById('countdownOverlay').style.display = 'none';
+
+            // Increment hourly count
+            const newCount = incrementHourlyAdsCount();
+
+            // Get fresh user data
+            let user = await getCurrentUser();
+            if (!user) {
+                await loadUser();
+                user = await getCurrentUser();
+                if (!user) {
+                    alert('ডেটা লোড হয়নি! আবার চেষ্টা করুন।');
+                    localStorage.setItem('hourly_ads_watched', (newCount - 1).toString());
+                    document.getElementById('watchBtn').disabled = false;
+                    document.getElementById('watchBtn').innerHTML = '🎬 এড দেখুন';
+                    adOpened = false;
+                    return;
+                }
+            }
+
+            // Update balance
+            const newBalance = (user.balance || 0) + 30;
+            const newIncome = (user.total_income || 0) + 30;
+            const newTotalAds = (user.total_ads || 0) + 1;
+
+            const { error } = await supabase
+                .from('users')
+                .update({
+                    balance: newBalance,
+                    total_income: newIncome,
+                    total_ads: newTotalAds,
+                    last_active: new Date().toISOString()
+                })
+                .eq('id', user.id);
+
+            if (error) {
+                alert('❌ সমস্যা! আবার চেষ্টা করুন।');
+                localStorage.setItem('hourly_ads_watched', (newCount - 1).toString());
+            } else {
+                // Update local user
+                user.balance = newBalance;
+                user.total_income = newIncome;
+                user.total_ads = newTotalAds;
+                window.currentUser = user;
+                alert(`✅ ৩০ টাকা যোগ! এই ঘন্টায় ${newCount}/10`);
+                updateUI();
+            }
+
+            document.getElementById('watchBtn').disabled = false;
+            document.getElementById('watchBtn').innerHTML = '🎬 এড দেখুন';
+            adOpened = false;
+        }
+    </script>
+</body>
+</html>

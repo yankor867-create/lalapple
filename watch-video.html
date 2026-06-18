@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ভিডিও টাস্ক - লাল আপেল</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .video-card {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 20px;
+            color: white;
+            margin: 16px 0;
+        }
+        .countdown-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(#FF9800 0deg, #333 0deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+        .countdown-number { font-size: 48px; font-weight: bold; color: #FF9800; }
+        .claim-btn { background: linear-gradient(135deg, #4CAF50, #2E7D32); transition: all 0.3s; }
+        .claim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .like-confirm-btn { background: linear-gradient(135deg, #2196F3, #0b7dda); transition: all 0.3s; }
+        .like-confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .highlight { background: #ff9800; color: #000; font-weight: bold; padding: 4px 8px; border-radius: 8px; }
+        .warning-box { background: #fff3cd; border: 2px solid #f39c12; border-radius: 15px; padding: 12px; margin-top: 15px; color: #856404; font-size: 13px; text-align: center; }
+
+        /* Big back button */
+        .back-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            color: var(--text-muted);
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            backdrop-filter: blur(8px);
+        }
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--red);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        .back-btn i {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="text-2xl font-bold">🎬 ভিডিও টাস্ক</h1>
+            <p class="text-white/80">১০০ টাকা আয় করুন</p>
+        </header>
+
+        <div class="glass card" style="text-align:center; margin:16px 0;">
+            <div style="display:flex; justify-content:space-between;"><span>📺 আজকে: </span><span id="todayVideoCount" style="color:var(--gold);">0</span></div>
+            <div class="progress-track"><div class="fill" id="videoProgressFill" style="width:0%"></div></div>
+            <p style="font-size:12px; color:var(--text-muted);" id="limitMessage">আজকে আরও ২ বার</p>
+        </div>
+
+        <div class="video-card">
+            <div class="flex items-center gap-3"><i class="fab fa-youtube text-red-500 text-3xl"></i><div><h3 class="font-bold">ভিডিও দেখুন & লাইক দিন</h3><p class="text-gray-300 text-sm">৮ মিনিট + লাইক = ১০০ টাকা</p></div></div>
+            <button id="watchVideoBtnTop" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 mt-3"><i class="fab fa-youtube"></i> ভিডিও দেখুন</button>
+            <div class="bg-red-900/30 p-3 rounded-lg mt-3 text-center"><p class="text-sm"><i class="fas fa-thumbs-up mr-1"></i><span class="highlight">গুরুত্বপূর্ণ:</span> লাইক দিতেই হবে</p></div>
+            <div class="warning-box"><i class="fas fa-exclamation-triangle mr-1"></i><strong>সতর্কতা:</strong> সঠিকভাবে দেখুন ও লাইক দিন।</div>
+        </div>
+
+        <div class="glass card" style="text-align:center; margin:16px 0;">
+            <div class="countdown-circle mx-auto"><div class="countdown-number" id="timerDisplay">৮:০০</div></div>
+            <p id="timerStatus">⏳ ভিডিও দেখার পর ফিরুন</p>
+            <button id="watchVideoBtnBottom" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 mb-3"><i class="fab fa-youtube"></i> 🎬 ভিডিও দেখুন</button>
+            <button id="likeConfirmBtn" class="like-confirm-btn w-full py-3 rounded-xl font-bold text-white" disabled style="display:none;">👍 আমি লাইক করেছি</button>
+            <button id="claimBtn" class="claim-btn w-full py-3 rounded-xl font-bold text-white mt-3" disabled>⏳ অপেক্ষা করুন...</button>
+            <p style="font-size:11px; color:var(--text-muted); margin-top:8px;">লাইমিট: ২ বার/দিন</p>
+        </div>
+
+        <!-- Big Back Button -->
+        <a href="tasks.html" class="back-btn">
+            <i class="fas fa-arrow-left"></i> টাস্ক পেজে ফিরুন
+        </a>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="index.html"><i class="fas fa-home"></i><span>হোম</span></a>
+        <a href="tasks.html" class="active"><i class="fas fa-tasks"></i><span>টাস্ক</span></a>
+        <a href="withdraw.html"><i class="fas fa-wallet"></i><span>উইথড্র</span></a>
+        <a href="profile.html"><i class="fas fa-user"></i><span>প্রোফাইল</span></a>
+    </nav>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // (same video logic as before – unchanged)
+        let countdownInterval = null,
+            timerCompleted = false,
+            isCounting = false,
+            likeConfirmed = false;
+        const REQUIRED_SECONDS = window.CONFIG.VIDEO_WATCH_SECONDS || 480;
+        const DAILY_LIMIT = window.CONFIG.DAILY_VIDEO_LIMIT || 2;
+
+        function getDailyVideoCount() {
+            const today = new Date().toDateString();
+            const last = localStorage.getItem('video_watch_date');
+            if (last !== today) {
+                localStorage.setItem('video_watch_date', today);
+                localStorage.setItem('video_watch_count', '0');
+                return 0;
+            }
+            return parseInt(localStorage.getItem('video_watch_count') || '0');
+        }
+
+        function incrementDailyVideoCount() {
+            const c = getDailyVideoCount() + 1;
+            localStorage.setItem('video_watch_count', c.toString());
+            return c;
+        }
+
+        function updateUI() {
+            const count = getDailyVideoCount();
+            document.getElementById('todayVideoCount').innerText = count;
+            document.getElementById('videoProgressFill').style.width = `${(count / DAILY_LIMIT) * 100}%`;
+            const msg = document.getElementById('limitMessage');
+            if (count >= DAILY_LIMIT) {
+                msg.innerText = '❌ লিমিট শেষ!';
+                document.getElementById('watchVideoBtnTop').disabled = true;
+                document.getElementById('watchVideoBtnBottom').disabled = true;
+                document.getElementById('claimBtn').disabled = true;
+                document.getElementById('likeConfirmBtn').disabled = true;
+            } else {
+                msg.innerText = `✅ বাকি ${DAILY_LIMIT - count} বার`;
+                document.getElementById('watchVideoBtnTop').disabled = isCounting;
+                document.getElementById('watchVideoBtnBottom').disabled = isCounting;
+            }
+        }
+
+        function getRandomVideoLink() {
+            const links = window.CONFIG.VIDEO_LINKS;
+            return links && links.length ? links[Math.floor(Math.random() * links.length)] : null;
+        }
+
+        function updateTimerDisplay(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById('timerDisplay').innerHTML =
+                `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+            const elapsed = REQUIRED_SECONDS - seconds;
+            const percent = (elapsed / REQUIRED_SECONDS) * 360;
+            document.querySelector('.countdown-circle').style.background =
+                `conic-gradient(#FF9800 ${percent}deg, #333 ${percent}deg)`;
+        }
+
+        function setTimerComplete() {
+            if (countdownInterval) clearInterval(countdownInterval);
+            isCounting = false;
+            timerCompleted = true;
+            const likeBtn = document.getElementById('likeConfirmBtn');
+            likeBtn.style.display = 'block';
+            likeBtn.disabled = false;
+            likeBtn.innerHTML = '👍 আমি লাইক করেছি';
+            document.getElementById('timerStatus').innerHTML = '✅ ভিডিও দেখা শেষ! এখন লাইক কনফার্ম করুন।';
+            document.getElementById('timerStatus').style.color = '#4CAF50';
+            updateTimerDisplay(0);
+            document.getElementById('claimBtn').disabled = true;
+            document.getElementById('claimBtn').innerHTML = '⏳ লাইক কনফার্ম করুন';
+        }
+
+        function startCountdown(startTimestamp) {
+            if (countdownInterval) clearInterval(countdownInterval);
+            timerCompleted = false;
+            likeConfirmed = false;
+            isCounting = true;
+            const likeBtn = document.getElementById('likeConfirmBtn');
+            likeBtn.style.display = 'none';
+            likeBtn.disabled = true;
+            document.getElementById('watchVideoBtnTop').disabled = true;
+            document.getElementById('watchVideoBtnBottom').disabled = true;
+            document.getElementById('claimBtn').disabled = true;
+            document.getElementById('claimBtn').innerHTML = '⏳ ভিডিও দেখুন...';
+            document.getElementById('timerStatus').innerHTML = '⏳ ভিডিও চলছে...';
+            document.getElementById('timerStatus').style.color = '';
+            const updateTimer = () => {
+                const now = Date.now();
+                const elapsed = Math.floor((now - startTimestamp) / 1000);
+                const remaining = Math.max(0, REQUIRED_SECONDS - elapsed);
+                updateTimerDisplay(remaining);
+                if (remaining <= 0) setTimerComplete();
+            };
+            updateTimer();
+            countdownInterval = setInterval(updateTimer, 1000);
+        }
+
+        function startWatching() {
+            if (getDailyVideoCount() >= DAILY_LIMIT) return alert('❌ লিমিট শেষ!');
+            if (isCounting) return alert('একটি ভিডিও চলছে!');
+            const url = getRandomVideoLink();
+            if (!url) return alert('⚠️ লিংক নেই');
+            const win = window.open(url, '_blank');
+            if (!win) return alert('পপআপ ব্লকার বন্ধ করুন!');
+            startCountdown(Date.now());
+        }
+
+        function confirmLike() {
+            if (!timerCompleted) return alert('❌ আগে ভিডিও দেখুন!');
+            if (likeConfirmed) return alert('ইতিমধ্যে কনফার্ম করেছেন।');
+            likeConfirmed = true;
+            document.getElementById('claimBtn').disabled = false;
+            document.getElementById('claimBtn').innerHTML = '💰 ১০০ টাকা ক্লেইম করুন';
+            document.getElementById('likeConfirmBtn').disabled = true;
+            document.getElementById('likeConfirmBtn').innerHTML = '✅ কনফার্ম হয়েছে';
+            document.getElementById('timerStatus').innerHTML = '✅ লাইক কনফার্ম! এখন ক্লেইম করুন।';
+        }
+
+        async function claimReward() {
+            if (!timerCompleted) return alert('❌ ভিডিও শেষ হয়নি!');
+            if (!likeConfirmed) return alert('❌ লাইক কনফার্ম করুন!');
+            if (getDailyVideoCount() >= DAILY_LIMIT) return alert('❌ লিমিট শেষ!');
+            const btn = document.getElementById('claimBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            const user = await getCurrentUser();
+            if (!user) { alert('ইউজার নেই!');
+                btn.disabled = false;
+                btn.innerHTML = '💰 ১০০ টাকা ক্লেইম করুন'; return; }
+            const bal = (user.balance || 0) + 100;
+            const inc = (user.total_income || 0) + 100;
+            const { error } = await supabase.from('users').update({
+                balance: bal,
+                total_income: inc,
+                last_active: new Date().toISOString()
+            }).eq('id', user.id);
+            if (error) { alert('❌ সমস্যা!');
+                btn.disabled = false;
+                btn.innerHTML = '💰 ১০০ টাকা ক্লেইম করুন'; return; }
+            user.balance = bal;
+            user.total_income = inc;
+            window.currentUser = user;
+            incrementDailyVideoCount();
+            alert('✅ ১০০ টাকা যোগ হয়েছে!');
+            location.reload();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI();
+            updateTimerDisplay(REQUIRED_SECONDS);
+            document.getElementById('claimBtn').disabled = true;
+            document.getElementById('claimBtn').innerHTML = '⏳ অপেক্ষা করুন...';
+            document.getElementById('timerStatus').innerHTML = '⏳ ভিডিও দেখার পর ফিরুন';
+            document.querySelector('.countdown-circle').style.background =
+                `conic-gradient(#FF9800 0deg, #333 0deg)`;
+            document.getElementById('likeConfirmBtn').style.display = 'none';
+            document.getElementById('likeConfirmBtn').disabled = true;
+            timerCompleted = false;
+            likeConfirmed = false;
+            isCounting = false;
+            const limitReached = getDailyVideoCount() >= DAILY_LIMIT;
+            document.getElementById('watchVideoBtnTop').disabled = limitReached;
+            document.getElementById('watchVideoBtnBottom').disabled = limitReached;
+            document.getElementById('watchVideoBtnTop').addEventListener('click', startWatching);
+            document.getElementById('watchVideoBtnBottom').addEventListener('click', startWatching);
+            document.getElementById('likeConfirmBtn').addEventListener('click', confirmLike);
+            document.getElementById('claimBtn').addEventListener('click', claimReward);
+        });
+    </script>
+</body>
+</html>

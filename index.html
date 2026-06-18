@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>লাল আপেল 🍎</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- Loading -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="apple-loader"><i class="fas fa-apple-alt"></i></div>
+        <div class="loader-text">লাল <span>আপেল</span></div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Countdown Overlay -->
+    <div id="countdownOverlay" class="countdown-overlay">
+        <div class="ring"><div class="ring-glow"></div><div class="number" id="countdownNumber">15</div></div>
+        <div class="title" id="countdownTitle">দেখুন...</div>
+        <div class="sub" id="countdownSub">অপেক্ষা করুন</div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div id="rulesModal" class="modal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <div><h2>🍎 নিয়ম</h2><p>আয়ের সহজ গাইড</p></div>
+                <button class="close" onclick="closeRulesModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="welcome-banner">🎉 জয়েন বোনাস: ৫০ টাকা</div>
+                <div class="rule-item"><span>১</span><div><h4>এড দেখুন</h4><p>৩০ টাকা/এড, ঘন্টায় ১০টি</p></div></div>
+                <div class="rule-item"><span>২</span><div><h4>বোনাস এড</h4><p>১০ টাকা/এড, ঘন্টায় ১০টি</p></div></div>
+                <div class="rule-item"><span>৩</span><div><h4>টাস্ক</h4><p>চ্যানেল, ইউটিউব – ৫০-১০০ টাকা</p></div></div>
+                <div class="rule-item"><span>৪</span><div><h4>রেফারেল</h4><p>১০০ টাকা প্রতি বন্ধু</p></div></div>
+                <div class="withdraw-rules">⚠️ উত্তোলন: ৫০০ টাকা, ১৫ রেফারেল, ৫০ এড</div>
+                <button class="btn-primary" onclick="closeRulesModal()">🚀 শুরু করি</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="appContent" style="display:none;">
+        <div class="app-container">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-top">
+                    <div class="brand"><i class="fas fa-apple-alt"></i><h1>লাল <span>আপেল</span></h1></div>
+                    <div class="live-badge"><i class="fas fa-circle"></i> লাইভ</div>
+                </div>
+                <div class="balance-card glass">
+                    <div class="label">🍎 ব্যালেন্স</div>
+                    <div class="amount"><span id="mainBalance">০.০০</span> টাকা</div>
+                    <div class="user"><i class="fas fa-user"></i> <span id="userName">ইউজার</span></div>
+                </div>
+            </header>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-item glass"><i class="fas fa-eye"></i><div class="value" id="todayAds">0/10</div><div class="label">এই ঘন্টা</div></div>
+                <div class="stat-item glass"><i class="fas fa-users"></i><div class="value" id="totalReferrals">0</div><div class="label">রেফারেল</div></div>
+                <div class="stat-item glass"><i class="fas fa-video"></i><div class="value" id="totalAds">0</div><div class="label">মোট এড</div></div>
+                <div class="stat-item glass"><i class="fas fa-coins"></i><div class="value" id="totalIncome">০</div><div class="label">মোট আয়</div></div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="action-grid">
+                <a href="tasks.html" class="action-card glass"><i class="fas fa-tasks"></i><span>টাস্ক</span></a>
+                <a href="withdraw.html" class="action-card glass"><i class="fas fa-hand-holding-usd"></i><span>উত্তোলন</span></a>
+                <button onclick="copyReferralLink()" class="action-card glass"><i class="fas fa-link"></i><span>রেফারেল</span></button>
+            </div>
+
+            <!-- Referral -->
+            <div class="glass card">
+                <h3><i class="fas fa-gift"></i> রেফারেল বোনাস</h3>
+                <p>প্রতি বন্ধু ১০০ টাকা, বন্ধু পায় ৫০ টাকা</p>
+                <div class="ref-link"><code id="referralLink">লোড হচ্ছে...</code></div>
+                <button class="btn-secondary" onclick="copyReferralLink()">📋 কপি</button>
+            </div>
+
+            <!-- Payment Channel -->
+            <a href="https://t.me/lalappleofficial" target="_blank" class="channel-banner">
+                <i class="fab fa-telegram"></i> 📢 পেমেন্ট প্রুফ চ্যানেল
+            </a>
+        </div>
+
+        <!-- Floating Video Button -->
+        <a href="watch-video.html" class="float-video">
+            <i class="fab fa-youtube"></i>
+            <div><span>ভিডিও</span><strong>১০০ টাকা</strong></div>
+            <span class="badge">নতুন</span>
+        </a>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="active"><i class="fas fa-home"></i><span>হোম</span></a>
+            <a href="tasks.html"><i class="fas fa-tasks"></i><span>টাস্ক</span></a>
+            <a href="withdraw.html"><i class="fas fa-wallet"></i><span>উইথড্র</span></a>
+            <a href="profile.html"><i class="fas fa-user"></i><span>প্রোফাইল</span></a>
+        </nav>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const tg = window.Telegram?.WebApp;
+            if (tg) { tg.expand();
+                tg.ready(); }
+            await loadUser();
+            updateHomeStats();
+            setInterval(updateHomeStats, 60000);
+            if (!localStorage.getItem('rules_seen')) setTimeout(openRulesModal, 1500);
+            document.getElementById('rulesModal').addEventListener('click', function(e) {
+                if (e.target === this) closeRulesModal();
+            });
+        });
+
+        function updateHomeStats() {
+            const count = getHourlyAdsCount();
+            document.getElementById('todayAds').textContent = `${count}/10`;
+        }
+        function openRulesModal() {
+            document.getElementById('rulesModal').style.display = 'flex';
+            localStorage.setItem('rules_seen', 'true');
+        }
+        function closeRulesModal() {
+            document.getElementById('rulesModal').style.display = 'none';
+        }
+        window.openRulesModal = openRulesModal;
+        window.closeRulesModal = closeRulesModal;
+    </script>
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>টাস্ক - লাল আপেল 🍎</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div id="toast" class="toast"></div>
+    <div id="countdownOverlay" class="countdown-overlay">
+        <div class="ring"><div class="ring-glow"></div><div class="number" id="countdownNumber">30</div></div>
+        <div class="title">দৈনিক বোনাস</div>
+        <div class="sub">৩০ সেকেন্ড অপেক্ষা</div>
+    </div>
+
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="text-2xl font-bold">📋 টাস্ক</h1>
+            <p class="text-white/70 text-sm">আয় করুন সহজে</p>
+        </header>
+
+        <div class="task-list" style="margin-top:16px;">
+            <!-- Main Ads -->
+            <div class="glass card" style="margin-bottom:16px;">
+                <div class="task-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div><i class="fas fa-play-circle" style="color:var(--red);"></i> <span style="font-weight:600;">এড দেখুন</span></div>
+                    <span class="tag" style="background:rgba(255,23,68,0.15); color:var(--red); padding:2px 10px; border-radius:20px; font-size:12px;">৩০ টাকা</span>
+                </div>
+                <div class="task-progress" style="display:flex; justify-content:space-between; font-size:14px; color:var(--text-muted);">
+                    <span>এই ঘন্টা: <span id="todayAdsCount" style="color:#fff;">0</span>/10</span>
+                    <span class="timer" id="resetTimer">রিসেট: --</span>
+                </div>
+                <div class="progress-track"><div class="fill" id="progressFill" style="width:0%"></div></div>
+                <a href="watch-ads.html" class="btn-primary" style="margin-top:12px; display:block; text-align:center;">🎬 দেখুন</a>
+            </div>
+
+            <!-- Bonus Ads -->
+            <div class="glass card" style="margin-bottom:16px;">
+                <div class="task-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div><i class="fas fa-star" style="color:var(--gold);"></i> <span style="font-weight:600;">বোনাস এড</span></div>
+                    <span class="tag" style="background:rgba(255,215,0,0.15); color:var(--gold); padding:2px 10px; border-radius:20px; font-size:12px;">১০ টাকা</span>
+                </div>
+                <div class="task-progress" style="display:flex; justify-content:space-between; font-size:14px; color:var(--text-muted);">
+                    <span>এই ঘন্টা: <span id="bonusAdsCount" style="color:#fff;">0</span>/10</span>
+                    <span class="timer" id="bonusResetTimer">রিসেট: --</span>
+                </div>
+                <div class="progress-track"><div class="fill" id="bonusProgressFill" style="width:0%; background:var(--gold);"></div></div>
+                <a href="bonus-ads.html" class="btn-primary" style="margin-top:12px; display:block; text-align:center; background:linear-gradient(135deg, #F9A825, #F57F17);">⭐ দেখুন</a>
+            </div>
+
+            <!-- Daily Bonus -->
+            <div class="glass card" style="margin-bottom:16px; border-color: #9C27B0;">
+                <div class="task-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div><i class="fas fa-calendar-day" style="color:#9C27B0;"></i> <span style="font-weight:600;">দৈনিক বোনাস</span></div>
+                    <span class="tag" style="background:rgba(156,39,176,0.15); color:#9C27B0; padding:2px 10px; border-radius:20px; font-size:12px;">৫ টাকা</span>
+                </div>
+                <div class="task-progress" style="display:flex; justify-content:space-between; font-size:14px; color:var(--text-muted);">
+                    <span>আজ: <span id="dailyBonusAdsCount" style="color:#fff;">0</span>/50</span>
+                    <span class="timer" id="dailyBonusResetTimer">রিসেট: --</span>
+                </div>
+                <div class="progress-track"><div class="fill" id="dailyBonusProgressFill" style="width:0%; background: linear-gradient(90deg, #667eea, #764ba2);"></div></div>
+                <button onclick="watchDailyBonusAd()" id="watchDailyBonusBtn" class="btn-primary" style="margin-top:12px; width:100%; background:linear-gradient(135deg, #667eea, #764ba2);">⭐ দেখুন</button>
+            </div>
+
+            <!-- Video Task -->
+            <div class="glass card" style="margin-bottom:16px; background: linear-gradient(135deg, #1a1a2e, #16213e); border-color: #FF1744;">
+                <div class="task-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div><i class="fab fa-youtube" style="color:#FF1744;"></i> <span style="font-weight:600; color:#fff;">ভিডিও টাস্ক</span></div>
+                    <span class="tag" style="background:rgba(255,23,68,0.2); color:#FF1744; padding:2px 10px; border-radius:20px; font-size:12px;">১০০ টাকা</span>
+                </div>
+                <div class="task-progress" style="display:flex; justify-content:space-between; font-size:14px; color:var(--text-muted);">
+                    <span>আজ: <span id="taskVideoCount" style="color:#fff;">0</span>/<span id="taskVideoLimit">2</span></span>
+                    <span id="taskVideoStatus" style="color:var(--gold);"></span>
+                </div>
+                <a href="watch-video.html" class="btn-primary" style="margin-top:12px; display:block; text-align:center; background:linear-gradient(135deg, #FF1744, #D50000);">🎬 দেখুন</a>
+            </div>
+
+            <!-- Deshiincome -->
+            <div class="glass card" style="margin-bottom:16px; border-color:#2196F3;">
+                <div class="task-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div><i class="fab fa-telegram" style="color:#2196F3;"></i> <span style="font-weight:600;">Deshiincome Bot</span></div>
+                    <span class="tag" style="background:rgba(33,150,243,0.15); color:#2196F3; padding:2px 10px; border-radius:20px; font-size:12px;">১০০ টাকা</span>
+                </div>
+                <button onclick="completeDeshiincomeTask()" id="deshiincomeBtn" class="btn-primary" style="width:100%; background:linear-gradient(135deg, #2196F3, #0b7dda);">🤖 জয়েন</button>
+            </div>
+
+            <!-- Telegram -->
+            <div class="glass card" style="margin-bottom:16px;">
+                <div class="task-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div><i class="fab fa-telegram" style="color:#1DA1F2;"></i> <span style="font-weight:600;">চ্যানেল জয়েন</span></div>
+                    <span class="tag" style="background:rgba(29,161,242,0.15); color:#1DA1F2; padding:2px 10px; border-radius:20px; font-size:12px;">৫০ টাকা</span>
+                </div>
+                <button onclick="completeTelegramTask()" id="telegramBtn" class="btn-primary" style="width:100%; background:linear-gradient(135deg, #1DA1F2, #0d8bd9);">📢 ক্লেইম</button>
+            </div>
+
+            <!-- YouTube -->
+            <div class="glass card" style="margin-bottom:16px;">
+                <div class="task-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div><i class="fab fa-youtube" style="color:#FF0000;"></i> <span style="font-weight:600;">ইউটিউব সাব</span></div>
+                    <span class="tag" style="background:rgba(255,0,0,0.15); color:#FF0000; padding:2px 10px; border-radius:20px; font-size:12px;">৫০ টাকা</span>
+                </div>
+                <button onclick="completeYoutubeTask()" id="youtubeBtn" class="btn-primary" style="width:100%; background:linear-gradient(135deg, #FF0000, #cc0000);">🎥 ক্লেইম</button>
+            </div>
+        </div>
+
+        <a href="index.html" class="back-link">← হোম</a>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="index.html"><i class="fas fa-home"></i><span>হোম</span></a>
+        <a href="tasks.html" class="active"><i class="fas fa-tasks"></i><span>টাস্ক</span></a>
+        <a href="withdraw.html"><i class="fas fa-wallet"></i><span>উইথড্র</span></a>
+        <a href="profile.html"><i class="fas fa-user"></i><span>প্রোফাইল</span></a>
+    </nav>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // ----- DAILY BONUS -----
+        let dailyCountdownInterval, dailyAdOpened = false;
+        const DAILY_LIMIT = 50,
+            DAILY_REWARD = 5,
+            DAILY_WAIT = 30;
+
+        function showToast(msg, err = false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.background = err ? '#dc2626' : '#22c55e';
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        function checkDailyReset() {
+            const today = new Date().toDateString();
+            const last = localStorage.getItem('last_daily_bonus_reset_date');
+            if (last !== today) {
+                localStorage.setItem('daily_bonus_ads_watched', '0');
+                localStorage.setItem('last_daily_bonus_reset_date', today);
+                return true;
+            }
+            if (last === null) {
+                localStorage.setItem('last_daily_bonus_reset_date', today);
+                localStorage.setItem('daily_bonus_ads_watched', '0');
+            }
+            return false;
+        }
+
+        function getDailyBonusCount() {
+            checkDailyReset();
+            return parseInt(localStorage.getItem('daily_bonus_ads_watched') || '0');
+        }
+
+        function incrementDailyBonusCount() {
+            const c = getDailyBonusCount() + 1;
+            localStorage.setItem('daily_bonus_ads_watched', c.toString());
+            return c;
+        }
+
+        function getTimeUntilNextDay() {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(now.getDate() + 1);
+            tomorrow.setHours(6, 0, 0, 0);
+            const diff = Math.floor((tomorrow - now) / 60000);
+            const h = Math.floor(diff / 60),
+                m = diff % 60;
+            return h > 0 ? `${h}ঘ ${m}মি` : `${m} মিনিট`;
+        }
+
+        function updateDailyBonusUI() {
+            const count = getDailyBonusCount();
+            document.getElementById('dailyBonusAdsCount').textContent = count;
+            document.getElementById('dailyBonusProgressFill').style.width = `${(count / DAILY_LIMIT) * 100}%`;
+            document.getElementById('dailyBonusResetTimer').textContent = `রিসেট: ${getTimeUntilNextDay()}`;
+            const btn = document.getElementById('watchDailyBonusBtn');
+            if (count >= DAILY_LIMIT) {
+                btn.disabled = true;
+                btn.innerHTML = '❌ লিমিট শেষ';
+                btn.style.opacity = '0.5';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '⭐ দেখুন';
+                btn.style.opacity = '1';
+            }
+        }
+
+        async function watchDailyBonusAd() {
+            let user = await getCurrentUser();
+            if (!user) {
+                await loadUser();
+                user = await getCurrentUser();
+                if (!user) {
+                    alert('ডেটা লোড হয়নি! পেজ রিফ্রেশ করুন।');
+                    return;
+                }
+            }
+            const count = getDailyBonusCount();
+            if (count >= DAILY_LIMIT) {
+                alert('❌ আজকের লিমিট শেষ! কাল সকাল ৬টায় আবার চেষ্টা করুন।');
+                return;
+            }
+            if (dailyAdOpened) {
+                alert('এড ইতিমধ্যে খোলা আছে!');
+                return;
+            }
+            const btn = document.getElementById('watchDailyBonusBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            const link = window.CONFIG.AD_LINKS[Math.floor(Math.random() * window.CONFIG.AD_LINKS.length)];
+            const win = window.open(link, '_blank');
+            dailyAdOpened = true;
+            
+            if (win === null) {
+                alert('⚠️ পপআপ ব্লকার বন্ধ করুন!');
+                btn.disabled = false;
+                btn.innerHTML = '⭐ দেখুন';
+                dailyAdOpened = false;
+                return;
+            }
+            
+            const overlay = document.getElementById('countdownOverlay');
+            overlay.style.display = 'flex';
+            let sec = DAILY_WAIT;
+            document.getElementById('countdownNumber').textContent = sec;
+            dailyCountdownInterval = setInterval(() => {
+                sec--;
+                document.getElementById('countdownNumber').textContent = sec;
+                if (sec <= 0) {
+                    clearInterval(dailyCountdownInterval);
+                    finishDailyBonusAd();
+                }
+            }, 1000);
+        }
+
+        async function finishDailyBonusAd() {
+            document.getElementById('countdownOverlay').style.display = 'none';
+            const newCount = incrementDailyBonusCount();
+            let user = await getCurrentUser();
+            if (!user) {
+                await loadUser();
+                user = await getCurrentUser();
+                if (!user) {
+                    alert('ডেটা লোড হয়নি!');
+                    localStorage.setItem('daily_bonus_ads_watched', (newCount - 1).toString());
+                    document.getElementById('watchDailyBonusBtn').disabled = false;
+                    document.getElementById('watchDailyBonusBtn').innerHTML = '⭐ দেখুন';
+                    dailyAdOpened = false;
+                    return;
+                }
+            }
+            const bal = (user.balance || 0) + DAILY_REWARD;
+            const inc = (user.total_income || 0) + DAILY_REWARD;
+            const daily2 = (user.today_bonus_ads_2 || 0) + 1;
+            const { error } = await supabase.from('users').update({
+                balance: bal,
+                total_income: inc,
+                today_bonus_ads_2: daily2,
+                last_active: new Date().toISOString()
+            }).eq('id', user.id);
+            if (error) {
+                alert('❌ সমস্যা!');
+                localStorage.setItem('daily_bonus_ads_watched', (newCount - 1).toString());
+            } else {
+                user.balance = bal;
+                user.total_income = inc;
+                user.today_bonus_ads_2 = daily2;
+                window.currentUser = user;
+                showToast(`✅ ${DAILY_REWARD} টাকা যোগ! আজ ${newCount}/${DAILY_LIMIT}`);
+                updateDailyBonusUI();
+                setTimeout(() => alert(`✅ ${DAILY_REWARD} টাকা যোগ! আজ ${newCount}/${DAILY_LIMIT}`), 500);
+            }
+            document.getElementById('watchDailyBonusBtn').disabled = false;
+            document.getElementById('watchDailyBonusBtn').innerHTML = '⭐ দেখুন';
+            dailyAdOpened = false;
+        }
+
+        // ----- HOURLY -----
+        function checkHourlyReset() {
+            const hour = new Date().getHours();
+            const last = localStorage.getItem('last_ad_reset_hour');
+            if (last !== null && parseInt(last) !== hour) {
+                localStorage.setItem('hourly_ads_watched', '0');
+                localStorage.setItem('last_ad_reset_hour', hour.toString());
+                return true;
+            }
+            if (last === null) {
+                localStorage.setItem('last_ad_reset_hour', hour.toString());
+                localStorage.setItem('hourly_ads_watched', '0');
+            }
+            return false;
+        }
+
+        function checkHourlyBonusReset() {
+            const hour = new Date().getHours();
+            const last = localStorage.getItem('last_bonus_reset_hour');
+            if (last !== null && parseInt(last) !== hour) {
+                localStorage.setItem('hourly_bonus_ads_watched', '0');
+                localStorage.setItem('last_bonus_reset_hour', hour.toString());
+                return true;
+            }
+            if (last === null) {
+                localStorage.setItem('last_bonus_reset_hour', hour.toString());
+                localStorage.setItem('hourly_bonus_ads_watched', '0');
+            }
+            return false;
+        }
+
+        function getHourlyAdsCount() {
+            checkHourlyReset();
+            return parseInt(localStorage.getItem('hourly_ads_watched') || '0');
+        }
+
+        function getHourlyBonusCount() {
+            checkHourlyBonusReset();
+            return parseInt(localStorage.getItem('hourly_bonus_ads_watched') || '0');
+        }
+
+        function getTimeUntilNextHour() {
+            const now = new Date();
+            const next = new Date(now);
+            next.setHours(now.getHours() + 1, 0, 0, 0);
+            const diff = Math.floor((next - now) / 60000);
+            return diff >= 60 ? `${Math.floor(diff/60)}ঘ ${diff%60}মি` : `${diff} মিনিট`;
+        }
+
+        function updateTasksUI() {
+            const ads = getHourlyAdsCount(),
+                bonus = getHourlyBonusCount();
+            const time = getTimeUntilNextHour();
+            document.getElementById('todayAdsCount').textContent = ads;
+            document.getElementById('resetTimer').textContent = `রিসেট: ${time}`;
+            document.getElementById('progressFill').style.width = `${(ads / 10) * 100}%`;
+            document.getElementById('bonusAdsCount').textContent = bonus;
+            document.getElementById('bonusResetTimer').textContent = `রিসেট: ${time}`;
+            document.getElementById('bonusProgressFill').style.width = `${(bonus / 10) * 100}%`;
+        }
+
+        function updateVideoTaskCount() {
+            const today = new Date().toDateString();
+            const last = localStorage.getItem('video_watch_date');
+            let count = 0;
+            if (last === today) count = parseInt(localStorage.getItem('video_watch_count') || '0');
+            const limit = window.CONFIG.DAILY_VIDEO_LIMIT || 2;
+            document.getElementById('taskVideoCount').innerText = count;
+            document.getElementById('taskVideoLimit').innerText = limit;
+            document.getElementById('taskVideoStatus').innerText = count >= limit ? '(লিমিট)' : `(বাকি ${limit-count})`;
+        }
+
+        // ----- TASKS -----
+        async function completeDeshiincomeTask() {
+            if (localStorage.getItem('task_deshiincome')) return alert('✅ আগেই সম্পন্ন!');
+            window.open('https://t.me/deshiincomebot', '_blank');
+            await addBonus(100);
+            localStorage.setItem('task_deshiincome', 'done');
+            const btn = document.getElementById('deshiincomeBtn');
+            btn.innerHTML = '✅ সম্পন্ন';
+            btn.disabled = true;
+            alert('🎉 ১০০ টাকা যোগ!');
+        }
+
+        async function completeTelegramTask() {
+            if (localStorage.getItem('task_telegram')) return alert('✅ আগেই সম্পন্ন!');
+            window.open('https://t.me/lalappleofficial', '_blank');
+            await addBonus(50);
+            localStorage.setItem('task_telegram', 'done');
+            const btn = document.getElementById('telegramBtn');
+            btn.innerHTML = '✅ সম্পন্ন';
+            btn.disabled = true;
+            alert('🎉 ৫০ টাকা যোগ!');
+        }
+
+        async function completeYoutubeTask() {
+            if (localStorage.getItem('task_youtube')) return alert('✅ আগেই সম্পন্ন!');
+            window.open('https://www.youtube.com/@wrathff-b5d', '_blank');
+            await addBonus(50);
+            localStorage.setItem('task_youtube', 'done');
+            const btn = document.getElementById('youtubeBtn');
+            btn.innerHTML = '✅ সম্পন্ন';
+            btn.disabled = true;
+            alert('🎉 ৫০ টাকা যোগ!');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTasksUI();
+            updateDailyBonusUI();
+            updateVideoTaskCount();
+            setInterval(() => { updateTasksUI();
+                updateDailyBonusUI();
+                updateVideoTaskCount(); }, 60000);
+            // Restore states
+            ['deshiincome', 'telegram', 'youtube'].forEach(task => {
+                if (localStorage.getItem(`task_${task}`)) {
+                    const btn = document.getElementById(task === 'deshiincome' ? 'deshiincomeBtn' : task ===
+                        'telegram' ? 'telegramBtn' : 'youtubeBtn');
+                    if (btn) { btn.innerHTML = '✅ সম্পন্ন';
+                        btn.disabled = true; }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
