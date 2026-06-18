@@ -51,23 +51,46 @@
     <script src="supabase-client.js"></script>
     <script src="app.js"></script>
     <script>
+        // ===== UPDATE UI WITH USER DATA =====
+        function updateProfileUI() {
+            const user = getUserData();
+            if (!user) {
+                console.warn('No user data in profile page – reloading...');
+                loadUser().then(() => {
+                    updateProfileUI();
+                });
+                return;
+            }
+            // Name
+            document.getElementById('profileName').textContent = user.first_name || 'ইউজার';
+            // User ID (truncated)
+            document.getElementById('userId').textContent = `আইডি: ${user.id.substring(0,10)}...`;
+            // Stats
+            document.getElementById('totalIncome').textContent = (user.total_income || 0).toFixed(2) + ' টাকা';
+            document.getElementById('totalAds').textContent = user.total_ads || 0;
+            document.getElementById('totalReferrals').textContent = user.total_referrals || 0;
+            // Join date
+            if (user.join_date) {
+                const d = new Date(user.join_date);
+                document.getElementById('joinDate').textContent = d.toLocaleDateString('bn');
+            } else {
+                document.getElementById('joinDate').textContent = '-';
+            }
+            // Referral link
+            const link = `https://t.me/${window.CONFIG.BOT_USERNAME}?startapp=ref${user.id}`;
+            document.getElementById('profileReferralLink').textContent = link;
+        }
+
+        // ===== LOGOUT =====
         function logout() {
             if (confirm('লগ আউট?')) { localStorage.clear();
                 window.location.href = 'index.html'; }
         }
+
+        // ===== LOAD USER ON PAGE LOAD =====
         document.addEventListener('DOMContentLoaded', async () => {
             await loadUser();
-            const user = getUserData();
-            if (user) {
-                document.getElementById('profileName').textContent = user.first_name || 'ইউজার';
-                document.getElementById('userId').textContent = `আইডি: ${user.id.substring(0,10)}...`;
-                document.getElementById('totalIncome').textContent = (user.total_income || 0).toFixed(2) + ' টাকা';
-                document.getElementById('totalAds').textContent = user.total_ads || 0;
-                document.getElementById('totalReferrals').textContent = user.total_referrals || 0;
-                document.getElementById('joinDate').textContent = new Date(user.join_date).toLocaleDateString('bn');
-                const link = `https://t.me/${window.CONFIG.BOT_USERNAME}?startapp=ref${user.id}`;
-                document.getElementById('profileReferralLink').textContent = link;
-            }
+            updateProfileUI();
         });
     </script>
 </body>

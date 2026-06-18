@@ -232,12 +232,43 @@
     <script>
         let selectedMethod = null;
 
+        // ===== UPDATE UI WITH USER DATA =====
+        function updateWithdrawUI() {
+            const user = getUserData();
+            if (!user) {
+                console.warn('No user data in withdraw page – reloading...');
+                loadUser().then(() => {
+                    updateWithdrawUI();
+                });
+                return;
+            }
+            // Update balance
+            const balanceEl = document.getElementById('balance');
+            if (balanceEl) balanceEl.textContent = (user.balance || 0).toFixed(2) + ' টাকা';
+
+            // Update referrals & ads
+            const refs = user.total_referrals || 0;
+            const ads = user.total_ads || 0;
+            const refEl = document.getElementById('reqReferrals');
+            const adsEl = document.getElementById('reqAds');
+            if (refEl) {
+                refEl.textContent = `${refs}/১৫`;
+                refEl.style.color = refs >= 15 ? 'var(--gold)' : 'var(--red)';
+            }
+            if (adsEl) {
+                adsEl.textContent = `${ads}/৫০`;
+                adsEl.style.color = ads >= 50 ? 'var(--gold)' : 'var(--red)';
+            }
+        }
+
+        // ===== LOAD USER ON PAGE LOAD =====
         document.addEventListener('DOMContentLoaded', async () => {
             await loadUser();
-            updateRequirements();
-            setInterval(updateRequirements, 30000);
+            updateWithdrawUI();
+            setInterval(updateWithdrawUI, 30000);
         });
 
+        // ===== METHOD SELECTION =====
         function selectMethod(method) {
             selectedMethod = method;
             document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
@@ -255,6 +286,7 @@
             }
         }
 
+        // ===== SUBMIT WITHDRAWAL =====
         async function submitWithdraw() {
             let user = await getCurrentUser();
             if (!user) {
@@ -299,19 +331,6 @@
                 alert('❌ ব্যর্থ: ' + result.error);
                 btn.disabled = false;
                 btn.innerHTML = '💸 উত্তোলন করুন';
-            }
-        }
-
-        function updateRequirements() {
-            const user = getUserData();
-            if (user) {
-                const refs = user.total_referrals || 0,
-                    ads = user.total_ads || 0;
-                document.getElementById('reqReferrals').textContent = `${refs}/১৫`;
-                document.getElementById('reqReferrals').style.color = refs >= 15 ? 'var(--gold)' : 'var(--red)';
-                document.getElementById('reqAds').textContent = `${ads}/৫০`;
-                document.getElementById('reqAds').style.color = ads >= 50 ? 'var(--gold)' : 'var(--red)';
-                document.getElementById('balance').textContent = user.balance?.toFixed(2) + ' টাকা';
             }
         }
     </script>
