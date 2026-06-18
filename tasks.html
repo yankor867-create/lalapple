@@ -11,6 +11,7 @@
 </head>
 <body>
     <div id="toast" class="toast"></div>
+    <!-- Countdown overlay is still available but not used for daily bonus -->
     <div id="countdownOverlay" class="countdown-overlay">
         <div class="ring"><div class="ring-glow"></div><div class="number" id="countdownNumber">30</div></div>
         <div class="title">দৈনিক বোনাস</div>
@@ -80,13 +81,13 @@
             </div>
 
             <!-- Deshiincome -->
-            <div class="glass card" style="margin-bottom:16px; border-color:#2196F3;">
+            <!-- <div class="glass card" style="margin-bottom:16px; border-color:#2196F3;">
                 <div class="task-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <div><i class="fab fa-telegram" style="color:#2196F3;"></i> <span style="font-weight:600;">Deshiincome Bot</span></div>
                     <span class="tag" style="background:rgba(33,150,243,0.15); color:#2196F3; padding:2px 10px; border-radius:20px; font-size:12px;">১০০ টাকা</span>
                 </div>
                 <button onclick="completeDeshiincomeTask()" id="deshiincomeBtn" class="btn-primary" style="width:100%; background:linear-gradient(135deg, #2196F3, #0b7dda);">🤖 জয়েন</button>
-            </div>
+            </div> -->
 
             <!-- Telegram -->
             <div class="glass card" style="margin-bottom:16px;">
@@ -98,14 +99,14 @@
             </div>
 
             <!-- YouTube -->
-            <div class="glass card" style="margin-bottom:16px;">
+            <!-- <div class="glass card" style="margin-bottom:16px;">
                 <div class="task-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <div><i class="fab fa-youtube" style="color:#FF0000;"></i> <span style="font-weight:600;">ইউটিউব সাব</span></div>
                     <span class="tag" style="background:rgba(255,0,0,0.15); color:#FF0000; padding:2px 10px; border-radius:20px; font-size:12px;">৫০ টাকা</span>
                 </div>
                 <button onclick="completeYoutubeTask()" id="youtubeBtn" class="btn-primary" style="width:100%; background:linear-gradient(135deg, #FF0000, #cc0000);">🎥 ক্লেইম</button>
             </div>
-        </div>
+        </div> -->
 
         <a href="index.html" class="back-link">← হোম</a>
     </div>
@@ -122,7 +123,7 @@
     <script src="supabase-client.js"></script>
     <script src="app.js"></script>
     <script>
-        // ----- DAILY BONUS -----
+        // ----- DAILY BONUS (timer on button) -----
         let dailyCountdownInterval, dailyAdOpened = false;
         const DAILY_LIMIT = 50,
             DAILY_REWARD = 5,
@@ -211,7 +212,6 @@
             }
             const btn = document.getElementById('watchDailyBonusBtn');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             
             const link = window.CONFIG.AD_LINKS[Math.floor(Math.random() * window.CONFIG.AD_LINKS.length)];
             const win = window.open(link, '_blank');
@@ -225,13 +225,13 @@
                 return;
             }
             
-            const overlay = document.getElementById('countdownOverlay');
-            overlay.style.display = 'flex';
+            // Start countdown on the button itself
             let sec = DAILY_WAIT;
-            document.getElementById('countdownNumber').textContent = sec;
+            btn.innerHTML = `⏳ অপেক্ষা ${sec}সে`;
+            
             dailyCountdownInterval = setInterval(() => {
                 sec--;
-                document.getElementById('countdownNumber').textContent = sec;
+                btn.innerHTML = `⏳ অপেক্ষা ${sec}সে`;
                 if (sec <= 0) {
                     clearInterval(dailyCountdownInterval);
                     finishDailyBonusAd();
@@ -240,7 +240,11 @@
         }
 
         async function finishDailyBonusAd() {
-            document.getElementById('countdownOverlay').style.display = 'none';
+            // Reset button state
+            const btn = document.getElementById('watchDailyBonusBtn');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ প্রসেসিং...';
+            
             const newCount = incrementDailyBonusCount();
             let user = await getCurrentUser();
             if (!user) {
@@ -249,8 +253,8 @@
                 if (!user) {
                     alert('ডেটা লোড হয়নি!');
                     localStorage.setItem('daily_bonus_ads_watched', (newCount - 1).toString());
-                    document.getElementById('watchDailyBonusBtn').disabled = false;
-                    document.getElementById('watchDailyBonusBtn').innerHTML = '⭐ দেখুন';
+                    btn.disabled = false;
+                    btn.innerHTML = '⭐ দেখুন';
                     dailyAdOpened = false;
                     return;
                 }
@@ -273,15 +277,15 @@
                 user.today_bonus_ads_2 = daily2;
                 window.currentUser = user;
                 showToast(`✅ ${DAILY_REWARD} টাকা যোগ! আজ ${newCount}/${DAILY_LIMIT}`);
-                updateDailyBonusUI();
                 setTimeout(() => alert(`✅ ${DAILY_REWARD} টাকা যোগ! আজ ${newCount}/${DAILY_LIMIT}`), 500);
+                updateDailyBonusUI();
             }
-            document.getElementById('watchDailyBonusBtn').disabled = false;
-            document.getElementById('watchDailyBonusBtn').innerHTML = '⭐ দেখুন';
+            btn.disabled = false;
+            btn.innerHTML = '⭐ দেখুন';
             dailyAdOpened = false;
         }
 
-        // ----- HOURLY -----
+        // ----- HOURLY (unchanged) -----
         function checkHourlyReset() {
             const hour = new Date().getHours();
             const last = localStorage.getItem('last_ad_reset_hour');
@@ -353,7 +357,7 @@
             document.getElementById('taskVideoStatus').innerText = count >= limit ? '(লিমিট)' : `(বাকি ${limit-count})`;
         }
 
-        // ----- TASKS -----
+        // ----- TASKS (unchanged) -----
         async function completeDeshiincomeTask() {
             if (localStorage.getItem('task_deshiincome')) return alert('✅ আগেই সম্পন্ন!');
             window.open('https://t.me/deshiincomebot', '_blank');
