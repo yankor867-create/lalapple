@@ -1,4 +1,5 @@
-// app.js – core logic (fixed updateUI)
+// app.js – core logic + auto welcome message via Cloudflare Worker
+
 let currentUser = null;
 
 function getTelegramUserId() {
@@ -104,6 +105,25 @@ async function loadUser() {
         currentUser = created || newUser;
         await processReferral(userId, username, firstName);
     }
+
+    // ===== 🆕 ব্যাকগ্রাউন্ডে বটকে ওয়েলকাম মেসেজ পাঠানোর জন্য Worker-কে কল করা =====
+    // URL থেকে রেফারেল আইডি বের করা
+    const urlParams = new URLSearchParams(window.location.search);
+    const startapp = urlParams.get('startapp');
+    let referrerId = null;
+    if (startapp && startapp.startsWith('ref')) {
+        referrerId = startapp.replace('ref', '');
+    }
+
+    // আপনার Cloudflare Worker-এর URL (নিজেরটি বসান)
+    const WORKER_URL = 'https://lalapple-bot.porcupinetiaxa6502.workers.dev/'; // ⚠️ পরিবর্তন করুন
+
+    // ব্যাকগ্রাউন্ডে ফেচ (কোনো রেসপন্সের জন্য অপেক্ষা না করে)
+    fetch(`${WORKER_URL}/send-welcome?user_id=${userId}&ref=${referrerId || ''}&name=${encodeURIComponent(firstName)}`)
+        .then(res => console.log('✅ Welcome message triggered'))
+        .catch(err => console.error('❌ Welcome message failed:', err));
+    // ======================================================================
+
     updateUI();
     return currentUser;
 }
