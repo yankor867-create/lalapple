@@ -55,23 +55,19 @@
             if (confirm('লগ আউট?')) { localStorage.clear();
                 window.location.href = 'index.html'; }
         }
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                const user = getUserData();
-                if (user) {
-                    document.getElementById('profileName').textContent = user.first_name || 'ইউজার';
-                    document.getElementById('userId').textContent = `আইডি: ${user.id.substring(0,10)}...`;
-                    document.getElementById('totalIncome').textContent = (user.total_income || 0).toFixed(2) +
-                        ' টাকা';
-                    document.getElementById('totalAds').textContent = user.total_ads || 0;
-                    document.getElementById('totalReferrals').textContent = user.total_referrals || 0;
-                    document.getElementById('joinDate').textContent = new Date(user.join_date)
-                        .toLocaleDateString('bn');
-                    const link =
-                        `https://t.me/${window.CONFIG.BOT_USERNAME}?startapp=ref${user.id}`;
-                    document.getElementById('profileReferralLink').textContent = link;
-                }
-            }, 1000);
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadUser();
+            const user = getUserData();
+            if (user) {
+                document.getElementById('profileName').textContent = user.first_name || 'ইউজার';
+                document.getElementById('userId').textContent = `আইডি: ${user.id.substring(0,10)}...`;
+                document.getElementById('totalIncome').textContent = (user.total_income || 0).toFixed(2) + ' টাকা';
+                document.getElementById('totalAds').textContent = user.total_ads || 0;
+                document.getElementById('totalReferrals').textContent = user.total_referrals || 0;
+                document.getElementById('joinDate').textContent = new Date(user.join_date).toLocaleDateString('bn');
+                const link = `https://t.me/${window.CONFIG.BOT_USERNAME}?startapp=ref${user.id}`;
+                document.getElementById('profileReferralLink').textContent = link;
+            }
         });
     </script>
 </body>
